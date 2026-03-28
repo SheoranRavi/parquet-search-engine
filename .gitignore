@@ -1,0 +1,46 @@
+# --- General / OS ---
+.DS_Store
+.env
+.env.local
+.env.*.local
+*.log
+node_modules/
+dist/
+build/
+
+# --- Go (Golang) ---
+# Binaries and archives
+bin/
+out/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test coverage
+*.out
+*.test
+
+# Go workspace file
+go.work
+go.work.sum
+
+# --- React / Frontend ---
+# Dependencies
+/frontend/node_modules/
+/.pnp
+.pnp.js
+
+# Production build
+/frontend/build/
+/frontend/dist/
+
+# IDEs and Tools
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
