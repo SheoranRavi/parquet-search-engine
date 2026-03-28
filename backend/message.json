@@ -1,0 +1,79 @@
+{MsgId: 2tfUJTbUFdFodbtDuFf5nBbHtTd PartitionId: 757688 Timestamp: 2025-02-28T11: 35: 50.644761847Z Hostname:fluent-bit-dzws9 Priority: 14 Facility: 1 FacilityString:user Severity: 6 SeverityString:info AppName:kafka ProcId:apica-otel-demo-kafka-76f8bdb949-rp65b Message: 2025-02-28T11: 34: 19.192998299+00: 00 stdout F [
+    2025-02-28 11: 34: 19,
+    192
+  ] INFO [UnifiedLog partition=__cluster_metadata-0, dir=/tmp/kafka-logs
+  ] Incremented log start offset to 14110 due to snapshot generated (kafka.log.UnifiedLog) MessageRaw: {
+    "date": 1740742537.485374,
+    "log": "2025-02-28T11:34:19.192998299+00:00 stdout F [2025-02-28 11:34:19,192] INFO [UnifiedLog partition=__cluster_metadata-0, dir=/tmp/kafka-logs] Incremented log start offset to 14110 due to snapshot generated (kafka.log.UnifiedLog)",
+    "kubernetes": {
+      "pod_name": "apica-otel-demo-kafka-76f8bdb949-rp65b",
+      "namespace_name": "otel-demo",
+      "pod_id": "c465f460-00b3-498d-b85e-42a0dff771f3",
+      "labels": {
+        "app.kubernetes.io/component": "kafka",
+        "app.kubernetes.io/instance": "apica-otel-demo",
+        "app.kubernetes.io/name": "apica-otel-demo-kafka",
+        "opentelemetry.io/name": "apica-otel-demo-kafka",
+        "pod-template-hash": "76f8bdb949"
+      },
+      "host": "10.0.10.139",
+      "container_name": "kafka",
+      "docker_id": "5af5ddec4641bea00aa0e528abf788a227989bdab014409e28b2e971e6361626",
+      "container_image": "ghcr.io/open-telemetry/demo:1.12.0-kafka"
+    },
+    "cluster_id": "integration-lab",
+    "host": "fluent-bit-dzws9",
+    "namespace": "default_namespace"
+  } StructuredData: {
+    "_psid": [
+      "1787319876581088881",
+      "_psid_1787319876581088881",
+      "_ps_68972422"
+    ],
+    "kubernetes.labels.app.kubernetes.io/component": [
+      "kafka"
+    ],
+    "kubernetes.labels.app.kubernetes.io/instance": [
+      "apica-otel-demo"
+    ],
+    "date": [
+      "1740742537.485374"
+    ],
+    "kubernetes.pod_name": [
+      "apica-otel-demo-kafka-76f8bdb949-rp65b"
+    ],
+    "_size": [
+      "907"
+    ],
+    "kubernetes.container_image": [
+      "ghcr.io/open-telemetry/demo:1.12.0-kafka"
+    ],
+    "kubernetes.host": [
+      "10.0.10.139"
+    ],
+    "kubernetes.docker_id": [
+      "5af5ddec4641bea00aa0e528abf788a227989bdab014409e28b2e971e6361626"
+    ],
+    "kubernetes.pod_id": [
+      "c465f460-00b3-498d-b85e-42a0dff771f3"
+    ],
+    "kubernetes.labels.app.kubernetes.io/name": [
+      "apica-otel-demo-kafka"
+    ],
+    "kubernetes.namespace_name": [
+      "otel-demo"
+    ],
+    "kubernetes.container_name": [
+      "kafka"
+    ],
+    "kubernetes.labels.opentelemetry.io/name": [
+      "apica-otel-demo-kafka"
+    ],
+    "kubernetes.labels.pod-template-hash": [
+      "76f8bdb949"
+    ],
+    "psid": [
+      "0"
+    ]
+  } Tag: Sender: 127.0.0.1 Groupings: [] Event: EventId: NanoTimeStamp: 1740742550644786915 Namespace:integration-lab:otel-demo
+}
