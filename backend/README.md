@@ -26,5 +26,5 @@ The indexer builds an inverse index.
 - Need to create indexes for the categorical fields as well.
 
 The query engine is simply responsible for fetching the documents based on the query.
-- Need to implement Union and Intersection algorithms.
+- Initially implemented simple Union and Intersection algorithms and did a intersection over all the tokens from the query.
 - Need to support complex queries that make use of OR and AND operations.

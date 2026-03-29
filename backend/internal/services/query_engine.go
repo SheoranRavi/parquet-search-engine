@@ -2,6 +2,7 @@ package services
 
 import (
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/SheoranRavi/parquet-search-engine/internal/logger"
@@ -42,4 +43,79 @@ func (q *QueryEngine) Query(input string) ([]model.Message, time.Duration) {
 	elapsed := time.Since(t)
 	q.logger.Info().Msgf("Fetched %d messages in %d ms", len(messages), elapsed.Milliseconds())
 	return messages, elapsed
+}
+
+// expr     = andExpr ("OR" andExpr)*
+// andExpr  = term ("AND" term)*
+// term     = WORD | "(" expr ")"
+
+type Node interface{}
+
+type WordNode struct {
+	Value string
+}
+
+type BinOp struct {
+	Op    string // "AND" | "OR"
+	Left  Node
+	Right Node
+}
+
+type Parser struct {
+	tokens []string
+	pos    int
+}
+
+func Parse(query string) Node {
+	p := &Parser{tokens: tokenize(query)}
+	return p.parseExpr()
+}
+
+func (p *Parser) parseExpr() Node {
+	left := p.parseAnd()
+	for p.peek() == "OR" {
+		p.next()
+		right := p.parseAnd()
+		left = &BinOp{Op: "OR", Left: left, Right: right}
+	}
+	return left
+}
+
+func (p *Parser) parseAnd() Node {
+	left := p.parseTerm()
+	for p.peek() == "AND" {
+		p.next()
+		right := p.parseTerm()
+		left = &BinOp{Op: "AND", Left: left, Right: right}
+	}
+	return left
+}
+
+func (p *Parser) parseTerm() Node {
+	tok := p.next()
+	if tok == "(" {
+		node := p.parseExpr()
+		p.next() // consume ")"
+		return node
+	}
+	return &WordNode{Value: tok}
+}
+
+func tokenize(query string) []string {
+	// splits on whitespace, keeps AND/OR/( /) as separate tokens
+	query = strings.ToLower(query)
+	return strings.Fields(query)
+}
+
+func (p *Parser) peek() string {
+	if p.pos >= len(p.tokens) {
+		return ""
+	}
+	return p.tokens[p.pos]
+}
+
+func (p *Parser) next() string {
+	tok := p.peek()
+	p.pos++
+	return tok
 }
