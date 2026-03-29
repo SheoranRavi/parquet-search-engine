@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"time"
@@ -8,7 +9,6 @@ import (
 	"github.com/SheoranRavi/parquet-search-engine/internal/logger"
 	"github.com/SheoranRavi/parquet-search-engine/internal/model"
 	"github.com/SheoranRavi/parquet-search-engine/internal/store"
-	"github.com/SheoranRavi/parquet-search-engine/internal/util"
 	"github.com/rs/zerolog"
 )
 
@@ -26,10 +26,11 @@ func NewQueryEngine(store *store.InMemoryStore) *QueryEngine {
 
 func (q *QueryEngine) Query(input string) ([]model.Message, time.Duration) {
 	t := time.Now()
-	// tokenize the query
-	tokens := util.Tokenize(input)
-	tokens = util.FilterStopWords(tokens)
-	messages, _ := q.store.GetIntersection(tokens)
+	q.logger.Info().Msgf("input query: %s", input)
+	tree := Parse(input)
+	q.logger.Info().Msgf("tree expression: %s", printNode(tree))
+	ids := q.eval(tree)
+	messages := q.store.GetMessages(ids)
 
 	// order messages by timestamp
 	slices.SortFunc(messages, func(a, b model.Message) int {
@@ -43,6 +44,47 @@ func (q *QueryEngine) Query(input string) ([]model.Message, time.Duration) {
 	elapsed := time.Since(t)
 	q.logger.Info().Msgf("Fetched %d messages in %d ms", len(messages), elapsed.Milliseconds())
 	return messages, elapsed
+}
+
+func (q *QueryEngine) eval(node Node) map[string]struct{} {
+	switch n := node.(type) {
+	case *WordNode:
+		return q.store.Lookup(n.Value) // returns set of message IDs
+	case *BinOp:
+		left := q.eval(n.Left)
+		right := q.eval(n.Right)
+		q.logger.Info().Msgf("left=%d, right=%d, op=%s", len(left), len(right), n.Op)
+		if n.Op == "and" {
+			result := intersect(left, right)
+			q.logger.Info().Msgf("after intersect=%d", len(result))
+			return result
+		}
+		result := union(left, right)
+		q.logger.Info().Msgf("after union=%d", len(result))
+		return result
+	}
+	return nil
+}
+
+func intersect(a, b map[string]struct{}) map[string]struct{} {
+	result := make(map[string]struct{})
+	for k := range a {
+		if _, ok := b[k]; ok {
+			result[k] = struct{}{}
+		}
+	}
+	return result
+}
+
+func union(a, b map[string]struct{}) map[string]struct{} {
+	result := make(map[string]struct{})
+	for k := range a {
+		result[k] = struct{}{}
+	}
+	for k := range b {
+		result[k] = struct{}{}
+	}
+	return result
 }
 
 // expr     = andExpr ("OR" andExpr)*
@@ -66,6 +108,16 @@ type Parser struct {
 	pos    int
 }
 
+func printNode(node Node) string {
+	switch n := node.(type) {
+	case *WordNode:
+		return fmt.Sprintf("Word(%s)", n.Value)
+	case *BinOp:
+		return fmt.Sprintf("(%s %s %s)", printNode(n.Left), n.Op, printNode(n.Right))
+	}
+	return "unknown"
+}
+
 func Parse(query string) Node {
 	p := &Parser{tokens: tokenize(query)}
 	return p.parseExpr()
@@ -73,20 +125,29 @@ func Parse(query string) Node {
 
 func (p *Parser) parseExpr() Node {
 	left := p.parseAnd()
-	for p.peek() == "OR" {
-		p.next()
-		right := p.parseAnd()
-		left = &BinOp{Op: "OR", Left: left, Right: right}
+	for {
+		tok := p.peek()
+		if tok == "or" {
+			p.next()
+			right := p.parseAnd()
+			left = &BinOp{Op: "or", Left: left, Right: right}
+		} else if tok != "" && tok != "and" && tok != ")" {
+			// implicit OR: "due snapshot" treated as "due or snapshot"
+			right := p.parseAnd()
+			left = &BinOp{Op: "or", Left: left, Right: right}
+		} else {
+			break
+		}
 	}
 	return left
 }
 
 func (p *Parser) parseAnd() Node {
 	left := p.parseTerm()
-	for p.peek() == "AND" {
+	for p.peek() == "and" {
 		p.next()
 		right := p.parseTerm()
-		left = &BinOp{Op: "AND", Left: left, Right: right}
+		left = &BinOp{Op: "and", Left: left, Right: right}
 	}
 	return left
 }
