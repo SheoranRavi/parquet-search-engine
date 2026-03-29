@@ -45,15 +45,15 @@ func (store *InMemoryStore) AddChunk(msgs []model.Message, termIndex map[string]
 	}
 }
 
-func (store *InMemoryStore) Get(tokens []string) ([]model.Message, error) {
+func (store *InMemoryStore) GetUnion(tokens []string) (map[string]model.Message, error) {
 	store.muMsg.Lock()
 	defer store.muMsg.Unlock()
-	result := make([]model.Message, 0)
+	result := make(map[string]model.Message)
 	for _, t := range tokens {
 		mIds, ok := store.termIndex[t]
 		if ok {
 			for _, id := range mIds {
-				result = append(result, *store.messages[id])
+				result[id] = *store.messages[id]
 			}
 		}
 	}

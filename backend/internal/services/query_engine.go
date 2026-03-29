@@ -28,9 +28,13 @@ func (q *QueryEngine) Query(input string) ([]model.Message, time.Duration) {
 	// tokenize the query
 	tokens := util.Tokenize(input)
 	tokens = util.FilterStopWords(tokens)
-	messages, _ := q.store.Get(tokens)
+	messages, _ := q.store.GetUnion(tokens)
+	result := make([]model.Message, 0, len(messages))
+	for _, v := range messages {
+		result = append(result, v)
+	}
 	// order messages by timestamp
-	slices.SortFunc(messages, func(a, b model.Message) int {
+	slices.SortFunc(result, func(a, b model.Message) int {
 		if a.NanoTimeStamp > b.NanoTimeStamp {
 			return 1
 		} else if a.NanoTimeStamp < b.NanoTimeStamp {
@@ -39,6 +43,6 @@ func (q *QueryEngine) Query(input string) ([]model.Message, time.Duration) {
 		return 0
 	})
 	elapsed := time.Since(t)
-	q.logger.Info().Msgf("Fetched %d messages in %d ms", len(messages), elapsed.Milliseconds())
-	return messages, elapsed
+	q.logger.Info().Msgf("Fetched %d messages in %d ms", len(result), elapsed.Milliseconds())
+	return result, elapsed
 }
