@@ -1,16 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/SheoranRavi/parquet-search-engine/internal/handlers"
 	"github.com/SheoranRavi/parquet-search-engine/internal/logger"
-	"github.com/SheoranRavi/parquet-search-engine/internal/model"
+	"github.com/SheoranRavi/parquet-search-engine/internal/middleware"
+	"github.com/SheoranRavi/parquet-search-engine/internal/server"
 	"github.com/SheoranRavi/parquet-search-engine/internal/services"
 	"github.com/SheoranRavi/parquet-search-engine/internal/store"
-	"github.com/parquet-go/parquet-go"
 )
 
 func main() {
@@ -18,10 +19,16 @@ func main() {
 		log.Fatal("Failed to initialize logger")
 	}
 	defer logger.Close()
+
 	store := store.NewInMemoryStore()
 	indexer := services.NewIndexer(store)
 	queryEngine := services.NewQueryEngine(store)
+	searchHandler := handlers.NewSearchHandler(indexer, queryEngine)
 
+	loggingMiddleware := middleware.Logging()
+	router := server.NewRouter(searchHandler, loggingMiddleware)
+
+	// start indexing
 	pathStr, err := os.Executable()
 	if err != nil {
 		panic(err)
@@ -32,22 +39,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var oneRow model.Message
-	for _, f := range files {
-		filePath := filepath.Join(pFilesPath, f.Name())
-		rows, _ := parquet.ReadFile[model.Message](filePath)
-		oneRow = rows[0]
-		fmt.Printf("Number of records: %d, file: %s\n", len(rows), f.Name())
-		fHandle, _ := os.Open(filePath)
-		stat, _ := fHandle.Stat()
-		pf, _ := parquet.OpenFile(fHandle, stat.Size())
-		schema := pf.Schema()
-		fmt.Println(schema.String())
-	}
-	fmt.Printf("Message: %+v\n", oneRow)
-}
+	go indexer.Index(pFilesPath, files)
 
-type RowType struct {
-	Message    string
-	MessageRaw string
+	// Start server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "9080"
+	}
+
+	log.Printf("Server starting on port %s", port)
+	if err := http.ListenAndServe(":"+port, router); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -26,13 +28,14 @@ func NewIndexer(store *store.InMemoryStore) *Indexer {
 }
 
 // index a bunch of files
-func (indexer *Indexer) Index(files []string) {
+func (indexer *Indexer) Index(parentDir string, files []os.DirEntry) {
 	tStart := time.Now()
 	indexer.logger.Info().Msg("Starting the indexing")
-	for _, filePath := range files {
+	for _, file := range files {
+		filePath := filepath.Join(parentDir, file.Name())
 		_, err := indexer.IndexFile(filePath)
 		if err != nil {
-			indexer.logger.Error().Msgf("Error indexing file: %s, error: %s", filePath, err)
+			indexer.logger.Error().Msgf("Error indexing file: %s, error: %s", file, err)
 		}
 	}
 	tElapsed := time.Since(tStart)

@@ -4,6 +4,8 @@ go 1.25.1
 
 require (
 	github.com/andybalholm/brotli v1.1.1 // indirect
+	github.com/go-chi/chi/v5 v5.2.5 // indirect
+	github.com/go-chi/cors v1.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
