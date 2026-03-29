@@ -45,7 +45,7 @@ func (store *InMemoryStore) AddChunk(msgs []model.Message, termIndex map[string]
 	}
 }
 
-func (store *InMemoryStore) GetUnion(tokens []string) (map[string]model.Message, error) {
+func (store *InMemoryStore) GetUnion(tokens []string) ([]model.Message, error) {
 	store.muMsg.Lock()
 	defer store.muMsg.Unlock()
 	result := make(map[string]model.Message)
@@ -57,5 +57,43 @@ func (store *InMemoryStore) GetUnion(tokens []string) (map[string]model.Message,
 			}
 		}
 	}
-	return result, nil
+	messages := make([]model.Message, 0, len(result))
+	for _, v := range result {
+		messages = append(messages, v)
+	}
+	return messages, nil
+}
+
+func (store *InMemoryStore) GetIntersection(tokens []string) ([]model.Message, error) {
+	store.muMsg.Lock()
+	defer store.muMsg.Unlock()
+
+	// take only those ids present in all the lists
+	list := make(map[string]struct{})
+	for i, t := range tokens {
+		newList := make(map[string]struct{})
+		mIds, ok := store.termIndex[t]
+		if ok {
+			for _, id := range mIds {
+				if i == 0 {
+					list[id] = struct{}{}
+				} else if _, ok := list[id]; ok {
+					// add to new list if present in both lists
+					newList[id] = struct{}{}
+				}
+			}
+		}
+		if i > 0 {
+			list = newList
+		}
+		if len(list) == 0 || !ok {
+			break
+		}
+	}
+
+	messages := make([]model.Message, 0, len(list))
+	for k := range list {
+		messages = append(messages, *store.messages[k])
+	}
+	return messages, nil
 }
