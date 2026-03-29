@@ -39,7 +39,7 @@ func (indexer *Indexer) Index(parentDir string, files []os.DirEntry) {
 		}
 	}
 	tElapsed := time.Since(tStart)
-	indexer.logger.Info().Msgf("Time taken for indexing all files: %d", tElapsed)
+	indexer.logger.Info().Msgf("Time taken for indexing all files: %d ms", tElapsed.Milliseconds())
 }
 
 // index one file

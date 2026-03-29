@@ -36,8 +36,8 @@ func NewRouter(
 		w.Write([]byte("ok"))
 	})
 
-	r.Route("/search", func(r chi.Router) {
-		r.Post("/", searhcHandler.Search)
+	r.Route("/api", func(r chi.Router) {
+		r.Post("/search", searhcHandler.Search)
 	})
 	// r.Route("/upload", func(r chi.Router) {
 	// 	r.Post("/", searhcHandler.)

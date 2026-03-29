@@ -39,6 +39,6 @@ func (q *QueryEngine) Query(input string) ([]model.Message, time.Duration) {
 		return 0
 	})
 	elapsed := time.Since(t)
-	q.logger.Info().Msgf("Fetched %d messages in %d", len(messages), elapsed)
+	q.logger.Info().Msgf("Fetched %d messages in %d ms", len(messages), elapsed.Milliseconds())
 	return messages, elapsed
 }

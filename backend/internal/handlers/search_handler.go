@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/SheoranRavi/parquet-search-engine/internal/logger"
 	"github.com/SheoranRavi/parquet-search-engine/internal/model"
@@ -33,10 +34,17 @@ func (sh *SearchHandler) Search(rw http.ResponseWriter, req *http.Request) {
 	msgs, duration := sh.queryEngine.Query(query.Query)
 	resp := &model.SearchResponse{
 		Messages:   msgs,
-		Duration:   duration,
+		Duration:   duration.Milliseconds(),
 		TotalCount: len(msgs),
 	}
-	_ = json.NewEncoder(rw).Encode(resp)
+	buf, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	rw.Header().Set("Content-Type", "application/json")
+	rw.Header().Set("Content-Length", strconv.Itoa(len(buf)))
+	rw.Write(buf)
 }
 
 // func (sh *SearchHandler) Upload(rw http.ResponseWriter, req *http.Request) {

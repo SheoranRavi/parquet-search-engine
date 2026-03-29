@@ -5,6 +5,7 @@ import (
 )
 
 func Tokenize(msg string) []string {
+	msg = strings.ToLower(msg)
 	var currToken strings.Builder
 	var tokens []string
 	for _, r := range msg {

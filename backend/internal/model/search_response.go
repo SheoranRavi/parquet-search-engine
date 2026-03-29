@@ -1,9 +1,7 @@
 package model
 
-import "time"
-
 type SearchResponse struct {
-	Messages   []Message
-	Duration   time.Duration
-	TotalCount int
+	Messages   []Message `json:"messages"`
+	Duration   int64     `json:"duration"`
+	TotalCount int       `json:"totalCount"`
 }

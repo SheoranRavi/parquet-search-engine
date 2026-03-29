@@ -1,5 +1,5 @@
 package model
 
 type SearchRequest struct {
-	Query string
+	Query string `json:"query"`
 }

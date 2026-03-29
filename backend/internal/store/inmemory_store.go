@@ -19,7 +19,9 @@ type InMemoryStore struct {
 
 func NewInMemoryStore() *InMemoryStore {
 	return &InMemoryStore{
-		logger: logger.NewRepoLogger("InMemoryStore"),
+		messages:  make(map[string]*model.Message),
+		termIndex: make(map[string][]string),
+		logger:    logger.NewRepoLogger("InMemoryStore"),
 	}
 }
 
