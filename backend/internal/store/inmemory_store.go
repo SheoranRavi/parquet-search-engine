@@ -43,8 +43,17 @@ func (store *InMemoryStore) AddChunk(msgs []model.Message, termIndex map[string]
 	}
 }
 
-func (store *InMemoryStore) GetSize() int {
+func (store *InMemoryStore) Get(tokens []string) ([]model.Message, error) {
 	store.muMsg.Lock()
 	defer store.muMsg.Unlock()
-	return len(store.messages)
+	result := make([]model.Message, 0)
+	for _, t := range tokens {
+		mIds, ok := store.termIndex[t]
+		if ok {
+			for _, id := range mIds {
+				result = append(result, *store.messages[id])
+			}
+		}
+	}
+	return result, nil
 }

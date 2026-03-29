@@ -2,14 +2,26 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/SheoranRavi/parquet-search-engine/internal/logger"
 	"github.com/SheoranRavi/parquet-search-engine/internal/model"
+	"github.com/SheoranRavi/parquet-search-engine/internal/services"
+	"github.com/SheoranRavi/parquet-search-engine/internal/store"
 	"github.com/parquet-go/parquet-go"
 )
 
 func main() {
+	if err := logger.Initialize(); err != nil {
+		log.Fatal("Failed to initialize logger")
+	}
+	defer logger.Close()
+	store := store.NewInMemoryStore()
+	indexer := services.NewIndexer(store)
+	queryEngine := services.NewQueryEngine(store)
+
 	pathStr, err := os.Executable()
 	if err != nil {
 		panic(err)

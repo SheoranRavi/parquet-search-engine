@@ -2,7 +2,6 @@ package services
 
 import (
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/SheoranRavi/parquet-search-engine/internal/logger"
@@ -17,7 +16,6 @@ import (
 type Indexer struct {
 	logger zerolog.Logger
 	store  *store.InMemoryStore
-	muIdx  sync.Mutex
 }
 
 func NewIndexer(store *store.InMemoryStore) *Indexer {
@@ -60,8 +58,6 @@ func (indexer *Indexer) IndexFile(filePath string) (time.Duration, error) {
 			termIndex[t] = append(termIndex[t], row.MsgId)
 		}
 	}
-	indexer.muIdx.Lock()
-	defer indexer.muIdx.Unlock()
 	indexer.store.AddChunk(rows, termIndex)
 	return time.Since(tStart), nil
 }
