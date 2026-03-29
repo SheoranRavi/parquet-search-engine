@@ -27,4 +27,4 @@ The indexer builds an inverse index.
 
 The query engine is simply responsible for fetching the documents based on the query.
 - Initially implemented simple Union and Intersection algorithms and did a intersection over all the tokens from the query.
-- Need to support complex queries that make use of OR and AND operations.
+- Added a query parser to support AND, OR operators on search terms.
